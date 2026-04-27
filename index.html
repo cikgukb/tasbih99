@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a3d3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tasbih">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Tasbih Digital · Asmaul Husna</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  body {
+    background: linear-gradient(160deg, #0a3d3a 0%, #126e5e 50%, #1a8c75 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+    min-height: 100vh;
+  }
+
+  /* Top bar */
+  .topbar {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 4px 12px;
+  }
+  .title { font-size: 18px; font-weight: 600; opacity: 0.9; letter-spacing: 0.5px; }
+  .menu-btn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: #fff;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  /* Mode toggle */
+  .modes {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    background: rgba(0,0,0,0.18);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 14px;
+  }
+  .mode {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+  .mode.active {
+    background: linear-gradient(135deg, #d4af37, #c89730);
+    color: #1a3d2a;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  /* Asmaul Husna card */
+  .name-card {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 20px 18px;
+    margin-bottom: 18px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .name-index {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+  .name-arabic {
+    font-size: 38px;
+    font-family: 'Traditional Arabic', 'Amiri', 'Scheherazade', serif;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    color: #ffd95a;
+    direction: rtl;
+  }
+  .name-translit {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+  .name-meaning {
+    font-size: 14px;
+    opacity: 0.85;
+    font-style: italic;
+  }
+
+  /* Counter */
+  .counter-display {
+    font-size: 96px;
+    font-weight: 200;
+    text-align: center;
+    line-height: 1;
+    margin: 10px 0 18px;
+    color: #fff;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    letter-spacing: -3px;
+  }
+  .target-info {
+    font-size: 13px;
+    opacity: 0.6;
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 18px;
+  }
+
+  /* Tap bead */
+  .bead-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 480px;
+    margin: 8px 0;
+  }
+  .bead {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 32%, #ffe27a, #d4af37 45%, #8a6a1c 100%);
+    box-shadow:
+      inset 0 -10px 30px rgba(0,0,0,0.45),
+      inset 0 8px 16px rgba(255,255,255,0.4),
+      0 12px 30px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.08s ease-out;
+    position: relative;
+  }
+  .bead:active, .bead.tapped {
+    transform: scale(0.94);
+  }
+  .bead-inner {
+    color: #4a3a10;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.4);
+  }
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    pointer-events: none;
+  }
+  @keyframes ripple {
+    to { transform: scale(2.5); opacity: 0; }
+  }
+
+  /* Bottom controls */
+  .controls {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    gap: 10px;
+    padding: 14px 0 8px;
+  }
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-reset { background: rgba(220, 80, 80, 0.25); border-color: rgba(220, 80, 80, 0.4); }
+  .btn-prev, .btn-next { background: rgba(212, 175, 55, 0.25); border-color: rgba(212, 175, 55, 0.4); }
+
+  /* Modal for selecting name */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    padding: 20px;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: linear-gradient(180deg, #1a4d44, #0c2e2a);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 75vh;
+    overflow-y: auto;
+    padding: 16px;
+    border-top: 2px solid rgba(212, 175, 55, 0.5);
+  }
+  .modal-header {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, #1a4d44 80%, transparent);
+    padding: 4px 4px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; }
+  .modal-close {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .name-list-item {
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: background 0.15s;
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .name-list-item:hover, .name-list-item.current { background: rgba(212, 175, 55, 0.18); }
+  .name-list-num {
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 6px 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .name-list-text { font-size: 14px; }
+  .name-list-text small { display: block; opacity: 0.65; font-size: 11px; margin-top: 2px; }
+  .name-list-arabic {
+    font-size: 22px;
+    color: #ffd95a;
+    font-family: 'Traditional Arabic', 'Amiri', serif;
+    direction: rtl;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Hide elements based on mode */
+  body.mode-counter .name-card { display: none; }
+  body.mode-counter .target-info { display: none; }
+  body.mode-counter .btn-prev, body.mode-counter .btn-next { display: none; }
+</style>
+</head>
+<body class="mode-asmaul">
+  <div class="topbar">
+    <div class="title">Tasbih Digital</div>
+    <button class="menu-btn" id="menuBtn" title="Pilih nama">≡</button>
+  </div>
+
+  <div class="modes">
+    <div class="mode active" data-mode="asmaul">Asmaul Husna</div>
+    <div class="mode" data-mode="counter">Counter Bebas</div>
+  </div>
+
+  <div class="name-card" id="nameCard">
+    <div class="name-index" id="nameIndex">1 / 99</div>
+    <div class="name-arabic" id="nameArabic">الرَّحْمَنُ</div>
+    <div class="name-translit" id="nameTranslit">Ar-Rahman</div>
+    <div class="name-meaning" id="nameMeaning">Maha Pemurah</div>
+  </div>
+
+  <div class="counter-display" id="counterDisplay">0</div>
+  <div class="target-info" id="targetInfo">Tap untuk zikir · Sampai 33 untuk teruskan ke nama seterusnya</div>
+
+  <div class="bead-wrap">
+    <div class="bead" id="bead">
+      <div class="bead-inner">TAP</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-prev" id="prevBtn">◀ Sebelum</button>
+    <button class="btn btn-reset" id="resetBtn">Reset</button>
+    <button class="btn btn-next" id="nextBtn">Seterus ▶</button>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">99 Asmaul Husna</div>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div id="nameList"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const NAMES = [
+  ["الرَّحْمَنُ","Ar-Rahman","Maha Pemurah"],
+  ["الرَّحِيمُ","Ar-Rahim","Maha Penyayang"],
+  ["الْمَلِكُ","Al-Malik","Maha Merajai"],
+  ["الْقُدُّوسُ","Al-Quddus","Maha Suci"],
+  ["السَّلَامُ","As-Salam","Maha Pemberi Kesejahteraan"],
+  ["الْمُؤْمِنُ","Al-Mu'min","Maha Memberi Keamanan"],
+  ["الْمُهَيْمِنُ","Al-Muhaymin","Maha Pemelihara"],
+  ["الْعَزِيزُ","Al-'Aziz","Maha Perkasa"],
+  ["الْجَبَّارُ","Al-Jabbar","Maha Kuasa"],
+  ["الْمُتَكَبِّرُ","Al-Mutakabbir","Maha Megah"],
+  ["الْخَالِقُ","Al-Khaliq","Maha Pencipta"],
+  ["الْبَارِئُ","Al-Bari'","Maha Mengadakan"],
+  ["الْمُصَوِّرُ","Al-Musawwir","Maha Pembentuk Rupa"],
+  ["الْغَفَّارُ","Al-Ghaffar","Maha Pengampun"],
+  ["الْقَهَّارُ","Al-Qahhar","Maha Mengalahkan"],
+  ["الْوَهَّابُ","Al-Wahhab","Maha Pemberi"],
+  ["الرَّزَّاقُ","Ar-Razzaq","Maha Pemberi Rezeki"],
+  ["الْفَتَّاحُ","Al-Fattah","Maha Pembuka"],
+  ["الْعَلِيمُ","Al-'Alim","Maha Mengetahui"],
+  ["الْقَابِضُ","Al-Qabid","Maha Menyempitkan"],
+  ["الْبَاسِطُ","Al-Basit","Maha Melapangkan"],
+  ["الْخَافِضُ","Al-Khafid","Maha Merendahkan"],
+  ["الرَّافِعُ","Ar-Rafi'","Maha Meninggikan"],
+  ["الْمُعِزُّ","Al-Mu'izz","Maha Memuliakan"],
+  ["الْمُذِلُّ","Al-Mudhill","Maha Menghinakan"],
+  ["السَّمِيعُ","As-Sami'","Maha Mendengar"],
+  ["الْبَصِيرُ","Al-Basir","Maha Melihat"],
+  ["الْحَكَمُ","Al-Hakam","Maha Menetapkan Hukum"],
+  ["الْعَدْلُ","Al-'Adl","Maha Adil"],
+  ["اللَّطِيفُ","Al-Latif","Maha Lembut"],
+  ["الْخَبِيرُ","Al-Khabir","Maha Mengenal"],
+  ["الْحَلِيمُ","Al-Halim","Maha Penyantun"],
+  ["الْعَظِيمُ","Al-'Azim","Maha Agung"],
+  ["الْغَفُورُ","Al-Ghafur","Maha Pengampun"],
+  ["الشَّكُورُ","Ash-Shakur","Maha Mensyukuri"],
+  ["الْعَلِيُّ","Al-'Aliyy","Maha Tinggi"],
+  ["الْكَبِيرُ","Al-Kabir","Maha Besar"],
+  ["الْحَفِيظُ","Al-Hafiz","Maha Memelihara"],
+  ["الْمُقِيتُ","Al-Muqit","Maha Pemberi Makanan"],
+  ["الْحَسِيبُ","Al-Hasib","Maha Penghitung"],
+  ["الْجَلِيلُ","Al-Jalil","Maha Mulia"],
+  ["الْكَرِيمُ","Al-Karim","Maha Pemurah"],
+  ["الرَّقِيبُ","Ar-Raqib","Maha Mengawasi"],
+  ["الْمُجِيبُ","Al-Mujib","Maha Mengabulkan"],
+  ["الْوَاسِعُ","Al-Wasi'","Maha Luas"],
+  ["الْحَكِيمُ","Al-Hakim","Maha Bijaksana"],
+  ["الْوَدُودُ","Al-Wadud","Maha Mengasihi"],
+  ["الْمَجِيدُ","Al-Majid","Maha Mulia"],
+  ["الْبَاعِثُ","Al-Ba'ith","Maha Membangkitkan"],
+  ["الشَّهِيدُ","Ash-Shahid","Maha Menyaksikan"],
+  ["الْحَقُّ","Al-Haqq","Maha Benar"],
+  ["الْوَكِيلُ","Al-Wakil","Maha Pemelihara"],
+  ["الْقَوِيُّ","Al-Qawiyy","Maha Kuat"],
+  ["الْمَتِينُ","Al-Matin","Maha Kukuh"],
+  ["الْوَلِيُّ","Al-Waliyy","Maha Melindungi"],
+  ["الْحَمِيدُ","Al-Hamid","Maha Terpuji"],
+  ["الْمُحْصِي","Al-Muhsi","Maha Menghitung"],
+  ["الْمُبْدِئُ","Al-Mubdi","Maha Memulakan"],
+  ["الْمُعِيدُ","Al-Mu'id","Maha Mengembalikan"],
+  ["الْمُحْيِي","Al-Muhyi","Maha Menghidupkan"],
+  ["الْمُمِيتُ","Al-Mumit","Maha Mematikan"],
+  ["الْحَيُّ","Al-Hayy","Maha Hidup"],
+  ["الْقَيُّومُ","Al-Qayyum","Maha Berdiri Sendiri"],
+  ["الْوَاجِدُ","Al-Wajid","Maha Penemu"],
+  ["الْمَاجِدُ","Al-Majid","Maha Mulia"],
+  ["الْوَاحِدُ","Al-Wahid","Maha Esa"],
+  ["الْأَحَدُ","Al-Ahad","Maha Tunggal"],
+  ["الصَّمَدُ","As-Samad","Maha Tempat Bergantung"],
+  ["الْقَادِرُ","Al-Qadir","Maha Berkuasa"],
+  ["الْمُقْتَدِرُ","Al-Muqtadir","Maha Berkuasa Mutlak"],
+  ["الْمُقَدِّمُ","Al-Muqaddim","Maha Mendahulukan"],
+  ["الْمُؤَخِّرُ","Al-Mu'akhkhir","Maha Mengakhirkan"],
+  ["الْأَوَّلُ","Al-Awwal","Maha Awal"],
+  ["الْآخِرُ","Al-Akhir","Maha Akhir"],
+  ["الظَّاهِرُ","Az-Zahir","Maha Nyata"],
+  ["الْبَاطِنُ","Al-Batin","Maha Tersembunyi"],
+  ["الْوَالِي","Al-Wali","Maha Memerintah"],
+  ["الْمُتَعَالِي","Al-Muta'ali","Maha Tinggi"],
+  ["الْبَرُّ","Al-Barr","Maha Penderma"],
+  ["التَّوَّابُ","At-Tawwab","Maha Penerima Taubat"],
+  ["الْمُنْتَقِمُ","Al-Muntaqim","Maha Penyiksa"],
+  ["الْعَفُوُّ","Al-'Afuww","Maha Pemaaf"],
+  ["الرَّءُوفُ","Ar-Ra'uf","Maha Belas Kasihan"],
+  ["مَالِكُ الْمُلْكِ","Malikul-Mulk","Maha Pemilik Kerajaan"],
+  ["ذُو الْجَلَالِ وَالْإِكْرَامِ","Dhul-Jalali wal-Ikram","Maha Pemilik Kebesaran dan Kemuliaan"],
+  ["الْمُقْسِطُ","Al-Muqsit","Maha Adil"],
+  ["الْجَامِعُ","Al-Jami'","Maha Mengumpulkan"],
+  ["الْغَنِيُّ","Al-Ghaniyy","Maha Kaya"],
+  ["الْمُغْنِي","Al-Mughni","Maha Mencukupkan"],
+  ["الْمَانِعُ","Al-Mani'","Maha Mencegah"],
+  ["الضَّارُّ","Ad-Darr","Maha Pemberi Mudarat"],
+  ["النَّافِعُ","An-Nafi'","Maha Pemberi Manfaat"],
+  ["النُّورُ","An-Nur","Maha Bercahaya"],
+  ["الْهَادِي","Al-Hadi","Maha Pemberi Petunjuk"],
+  ["الْبَدِيعُ","Al-Badi'","Maha Pencipta Tiada Tara"],
+  ["الْبَاقِي","Al-Baqi","Maha Kekal"],
+  ["الْوَارِثُ","Al-Warith","Maha Mewarisi"],
+  ["الرَّشِيدُ","Ar-Rashid","Maha Pandai"],
+  ["الصَّبُورُ","As-Sabur","Maha Sabar"]
+];
+
+const TARGET_PER_NAME = 33;
+
+let state = {
+  mode: 'asmaul',
+  count: 0,
+  nameIdx: 0,
+  totalCounter: 0,
+};
+
+// Load saved state
+try {
+  const saved = JSON.parse(localStorage.getItem('tasbih') || '{}');
+  state = { ...state, ...saved };
+} catch(e) {}
+
+const $ = id => document.getElementById(id);
+
+function save() {
+  try { localStorage.setItem('tasbih', JSON.stringify(state)); } catch(e) {}
+}
+
+function vibrate(ms) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function render() {
+  document.body.className = 'mode-' + state.mode;
+  document.querySelectorAll('.mode').forEach(el => {
+    el.classList.toggle('active', el.dataset.mode === state.mode);
+  });
+
+  if (state.mode === 'asmaul') {
+    const [ar, tr, mn] = NAMES[state.nameIdx];
+    $('nameArabic').textContent = ar;
+    $('nameTranslit').textContent = tr;
+    $('nameMeaning').textContent = mn;
+    $('nameIndex').textContent = (state.nameIdx + 1) + ' / 99';
+    $('counterDisplay').textContent = state.count;
+    $('targetInfo').textContent = `${state.count} / ${TARGET_PER_NAME} · Tap untuk zikir`;
+  } else {
+    $('counterDisplay').textContent = state.totalCounter;
+  }
+}
+
+function tap(e) {
+  // ripple
+  const bead = $('bead');
+  const rect = bead.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  const size = 60;
+  r.style.left = (x - size/2) + 'px';
+  r.style.top = (y - size/2) + 'px';
+  r.style.width = r.style.height = size + 'px';
+  bead.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+
+  vibrate(15);
+
+  if (state.mode === 'asmaul') {
+    state.count++;
+    if (state.count >= TARGET_PER_NAME) {
+      // Move to next name
+      if (state.nameIdx < NAMES.length - 1) {
+        state.nameIdx++;
+        state.count = 0;
+        showToast('Alhamdulillah · ' + NAMES[state.nameIdx][1]);
+        vibrate([30, 50, 30]);
+      } else {
+        showToast('Selesai 99 nama Allah · Alhamdulillah');
+        vibrate([50, 50, 50, 50, 200]);
+        state.count = TARGET_PER_NAME;
+      }
+    }
+  } else {
+    state.totalCounter++;
+  }
+  save();
+  render();
+}
+
+function reset() {
+  if (state.mode === 'asmaul') {
+    if (!confirm('Reset kiraan dan kembali ke nama pertama?')) return;
+    state.count = 0;
+    state.nameIdx = 0;
+  } else {
+    if (!confirm('Reset counter ke 0?')) return;
+    state.totalCounter = 0;
+  }
+  save();
+  render();
+  showToast('Counter direset');
+}
+
+function nextName() {
+  if (state.mode !== 'asmaul') return;
+  state.nameIdx = (state.nameIdx + 1) % NAMES.length;
+  state.count = 0;
+  save();
+  render();
+}
+
+function prevName() {
+  if (state.mode !== 'asmaul') return;
+  state.nameIdx = (state.nameIdx - 1 + NAMES.length) % NAMES.length;
+  state.count = 0;
+  save();
+  render();
+}
+
+function buildNameList() {
+  const list = $('nameList');
+  list.innerHTML = '';
+  NAMES.forEach(([ar, tr, mn], i) => {
+    const el = document.createElement('div');
+    el.className = 'name-list-item' + (i === state.nameIdx ? ' current' : '');
+    el.innerHTML = `
+      <div class="name-list-num">${i+1}</div>
+      <div class="name-list-text"><strong>${tr}</strong><small>${mn}</small></div>
+      <div class="name-list-arabic">${ar}</div>
+    `;
+    el.onclick = () => {
+      state.nameIdx = i;
+      state.count = 0;
+      save();
+      render();
+      $('modal').classList.remove('show');
+    };
+    list.appendChild(el);
+  });
+}
+
+// Event listeners
+$('bead').addEventListener('click', tap);
+$('resetBtn').addEventListener('click', reset);
+$('nextBtn').addEventListener('click', nextName);
+$('prevBtn').addEventListener('click', prevName);
+
+$('menuBtn').addEventListener('click', () => {
+  buildNameList();
+  $('modal').classList.add('show');
+  // scroll current into view
+  setTimeout(() => {
+    const cur = document.querySelector('.name-list-item.current');
+    if (cur) cur.scrollIntoView({ block: 'center' });
+  }, 50);
+});
+$('modalClose').addEventListener('click', () => $('modal').classList.remove('show'));
+$('modal').addEventListener('click', e => {
+  if (e.target === $('modal')) $('modal').classList.remove('show');
+});
+
+document.querySelectorAll('.mode').for
