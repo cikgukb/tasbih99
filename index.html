@@ -124,6 +124,54 @@
     text-shadow: 0 4px 24px rgba(0,0,0,0.3);
     letter-spacing: -3px;
   }
+  .counter-wrap {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+  }
+  .target-celebration {
+    position: absolute;
+    inset: -18px 0 auto;
+    min-height: 124px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 5;
+  }
+  .target-celebration.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .target-celebration-main {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    padding: 10px 18px 12px;
+    background: rgba(6, 36, 31, 0.82);
+    border: 1px solid rgba(255, 217, 90, 0.55);
+    box-shadow: 0 14px 34px rgba(0,0,0,0.36);
+    color: #ffd95a;
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.05;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+  }
+  .target-celebration-sub {
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.92);
+    font-size: 13px;
+    font-weight: 700;
+  }
   .target-info {
     font-size: 13px;
     opacity: 0.6;
@@ -352,6 +400,7 @@
     .target-settings { grid-template-columns: 1fr 92px; }
     .target-mode { font-size: 12px; padding: 9px 4px; }
     .target-input { font-size: 16px; }
+    .target-celebration-main { font-size: 28px; }
   }
 </style>
 </head>
@@ -373,7 +422,13 @@
     <div class="name-meaning" id="nameMeaning">Maha Pemurah</div>
   </div>
 
-  <div class="counter-display" id="counterDisplay">0</div>
+  <div class="counter-wrap">
+    <div class="target-celebration" id="targetCelebration">
+      <div class="target-celebration-main" id="targetCelebrationMain">Alhamdulillah</div>
+      <div class="target-celebration-sub" id="targetCelebrationSub">Target capai</div>
+    </div>
+    <div class="counter-display" id="counterDisplay">0</div>
+  </div>
   <div class="target-settings" id="targetSettings">
     <div class="target-toggle" aria-label="Jenis sasaran zikir">
       <button class="target-mode active" data-target-mode="fixed" type="button">Target</button>
@@ -548,6 +603,16 @@ function showToast(msg) {
   t._h = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
+function showTargetCelebration(subText) {
+  const box = $('targetCelebration');
+  $('targetCelebrationMain').textContent = 'Alhamdulillah';
+  $('targetCelebrationSub').textContent = subText;
+  box.classList.remove('show');
+  clearTimeout(box._h);
+  requestAnimationFrame(() => box.classList.add('show'));
+  box._h = setTimeout(() => box.classList.remove('show'), 2100);
+}
+
 function normalizeTarget(value) {
   const target = Number.parseInt(value, 10);
   if (Number.isNaN(target)) return DEFAULT_TARGET_PER_NAME;
@@ -604,10 +669,10 @@ function tap(e) {
       if (state.nameIdx < NAMES.length - 1) {
         state.nameIdx++;
         state.count = 0;
-        showToast('Alhamdulillah · ' + NAMES[state.nameIdx][1]);
+        showTargetCelebration('Target capai - ' + NAMES[state.nameIdx][1]);
         vibrate([30, 50, 30]);
       } else {
-        showToast('Selesai 99 nama Allah · Alhamdulillah');
+        showTargetCelebration('Selesai 99 nama Allah');
         vibrate([50, 50, 50, 50, 200]);
         state.count = state.targetValue;
       }
